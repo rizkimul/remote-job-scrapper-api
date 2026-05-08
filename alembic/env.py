@@ -5,16 +5,15 @@ from sqlalchemy import Connection, pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
+from app.core.config import settings
+from app.models import Base  # importing __init__ registers all models on Base.metadata
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Populated after Step 2: from app.models.base import Base; target_metadata = Base.metadata
-target_metadata = None
-
-from app.core.config import settings  # noqa: E402
+target_metadata = Base.metadata
 
 config.set_main_option("sqlalchemy.url", settings.database_url)
 
