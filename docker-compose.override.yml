@@ -1,0 +1,12 @@
+services:
+  app:
+    volumes:
+      - .:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      APP_DEBUG: "true"
+
+  celery_worker:
+    volumes:
+      - .:/app
+    command: celery -A app.workers.celery_app worker --loglevel=debug --concurrency=2
