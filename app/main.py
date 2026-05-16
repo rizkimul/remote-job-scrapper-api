@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.core.config import settings
 from app.core.logging import configure_logging
+from app.routers import jobs
 
 
 def create_app() -> FastAPI:
@@ -23,6 +24,8 @@ def create_app() -> FastAPI:
     @app.get("/health", tags=["infra"])
     async def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    app.include_router(jobs.router)
 
     return app
 
