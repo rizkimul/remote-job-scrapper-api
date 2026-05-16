@@ -24,6 +24,16 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(minute=0, hour="*/6"),
         "args": ("remoteok",),
     },
+    "scrape-remotive": {
+        "task": "scrape_source",
+        "schedule": crontab(minute=30, hour="*/6"),  # offset 30m to stagger load
+        "args": ("remotive",),
+    },
+    "scrape-wwr": {
+        "task": "scrape_source",
+        "schedule": crontab(minute=0, hour="*/8"),
+        "args": ("wwr",),
+    },
     # Digest email at 08:00 UTC daily (implemented in Step 8)
     "send-digest-daily": {
         "task": "send_digest",
