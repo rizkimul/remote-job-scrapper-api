@@ -1,8 +1,6 @@
 import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from app.models.scrape_run import ScrapeRunStatus
 from app.schemas.pipeline import PipelineResult
 from app.workers.tasks import _run_scrape_source, _run_send_digest, cleanup_stale

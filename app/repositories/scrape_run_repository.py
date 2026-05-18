@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,7 +26,7 @@ class ScrapeRunRepository:
         run = ScrapeRun(
             source_id=source_id,
             status=ScrapeRunStatus.RUNNING,
-            started_at=datetime.now(tz=timezone.utc),
+            started_at=datetime.now(tz=UTC),
         )
         self._session.add(run)
         await self._session.flush()  # get id without committing
@@ -53,7 +53,7 @@ class ScrapeRunRepository:
         if run is None:
             return
         run.status = status
-        run.ended_at = datetime.now(tz=timezone.utc)
+        run.ended_at = datetime.now(tz=UTC)
         run.items_found = items_found
         run.items_stored = items_stored
         run.error_message = error_message
@@ -100,7 +100,7 @@ class ScrapeRunRepository:
         Returns:
             List of tuples ordered by date desc, source name.
         """
-        since = datetime.now(tz=timezone.utc) - timedelta(days=days)
+        since = datetime.now(tz=UTC) - timedelta(days=days)
         stmt = (
             select(
                 Source.name,

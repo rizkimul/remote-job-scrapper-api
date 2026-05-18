@@ -1,5 +1,5 @@
 import smtplib
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -87,7 +87,7 @@ class SubscriptionService:
         return DigestResult(subscriptions_processed=len(subs), emails_sent=emails_sent)
 
     async def _send_for_subscription(self, sub: DigestSubscription) -> int:
-        since = datetime.now(tz=timezone.utc) - timedelta(hours=_DIGEST_WINDOW_HOURS)
+        since = datetime.now(tz=UTC) - timedelta(hours=_DIGEST_WINDOW_HOURS)
 
         candidate_jobs, _ = await self._job_repo.list_jobs(
             tags=sub.tags_filter,
@@ -104,12 +104,13 @@ class SubscriptionService:
         if not new_jobs:
             return 0
 
-        subject = f"Daily Remote Job Digest — {len(new_jobs)} new job{'s' if len(new_jobs) > 1 else ''}"
+        plural = "s" if len(new_jobs) > 1 else ""
+        subject = f"Daily Remote Job Digest — {len(new_jobs)} new job{plural}"
         body = _build_email_body(new_jobs)
 
         _send_email(to=sub.email, subject=subject, body=body)
 
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         await self._send_repo.record_sends(sub.id, [j.id for j in new_jobs], now)
         await self._session.commit()
 

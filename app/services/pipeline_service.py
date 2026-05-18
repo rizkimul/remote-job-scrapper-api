@@ -11,10 +11,10 @@ from app.repositories.dedup_key_repository import DedupKeyRepository
 from app.repositories.job_repository import JobRepository
 from app.repositories.scrape_run_repository import ScrapeRunRepository
 from app.repositories.source_repository import SourceRepository
+from app.schemas.pipeline import PipelineResult
 from app.scrapers.remoteok.scraper import RemoteOKScraper
 from app.scrapers.remotive.scraper import RemotiveScraper
 from app.scrapers.wwr.scraper import WWRScraper
-from app.schemas.pipeline import PipelineResult
 
 log = structlog.get_logger()
 

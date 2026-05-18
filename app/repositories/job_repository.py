@@ -1,6 +1,8 @@
 import uuid
 from datetime import datetime
 
+from typing import Any
+
 from sqlalchemy import func, literal_column, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -76,7 +78,7 @@ class JobRepository:
         Returns:
             Tuple of (job list, total count matching filters).
         """
-        conditions = [Job.is_active.is_(True)]
+        conditions: list[Any] = [Job.is_active.is_(True)]
 
         if tags:
             conditions.append(Job.tags.overlap(tags))
@@ -87,7 +89,7 @@ class JobRepository:
         if search:
             # Inline tsvector — works without a pre-computed column.
             # search_vector column gets pre-computed in a later migration for perf.
-            lang = literal_column("'english'")
+            lang: Any = literal_column("'english'")
             text_body = func.concat_ws(" ", Job.title, Job.company, Job.description)
             conditions.append(
                 func.to_tsvector(lang, text_body).op("@@")(

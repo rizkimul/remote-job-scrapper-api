@@ -1,5 +1,7 @@
+import contextlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import Any
 
 import httpx
 
@@ -59,7 +61,7 @@ class RemoteOKScraper(BaseScraper):
         missing required fields rather than failing the entire batch.
         """
         try:
-            data: list[dict] = json.loads(raw)
+            data: list[dict[str, Any]] = json.loads(raw)
         except json.JSONDecodeError as exc:
             raise ParseError(
                 f"RemoteOK JSON decode failed: {exc}", code="parse_error"
@@ -78,25 +80,21 @@ class RemoteOKScraper(BaseScraper):
 
         return items
 
-    def _map_entry(self, entry: dict) -> RawJobItem:
+    def _map_entry(self, entry: dict[str, Any]) -> RawJobItem:
         posted_at = (
-            datetime.fromtimestamp(int(entry["epoch"]), tz=timezone.utc)
+            datetime.fromtimestamp(int(entry["epoch"]), tz=UTC)
             if entry.get("epoch")
-            else datetime.now(tz=timezone.utc)
+            else datetime.now(tz=UTC)
         )
 
         salary_min: int | None = None
         salary_max: int | None = None
         if raw_min := entry.get("salary_min"):
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 salary_min = int(raw_min)
-            except (ValueError, TypeError):
-                pass
         if raw_max := entry.get("salary_max"):
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 salary_max = int(raw_max)
-            except (ValueError, TypeError):
-                pass
 
         source_url: str = entry.get("url") or (
             f"https://remoteok.com/remote-jobs/{entry['slug']}"

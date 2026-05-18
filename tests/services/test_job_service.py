@@ -1,10 +1,10 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from app.services.job_service import JobService
 
-_NOW = datetime(2026, 1, 1, tzinfo=timezone.utc)
+_NOW = datetime(2026, 1, 1, tzinfo=UTC)
 
 
 def _make_job(**kwargs) -> MagicMock:

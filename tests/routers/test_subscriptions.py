@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
 
 import httpx
@@ -10,7 +10,7 @@ from app.main import create_app
 from app.routers.subscriptions import get_subscription_service
 from app.schemas.subscription import SubscriptionResponse
 
-_NOW = datetime(2026, 1, 1, tzinfo=timezone.utc)
+_NOW = datetime(2026, 1, 1, tzinfo=UTC)
 
 
 def _make_sub_response(**kwargs) -> SubscriptionResponse:

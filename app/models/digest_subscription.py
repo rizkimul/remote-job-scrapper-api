@@ -1,11 +1,17 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, Integer, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.models.digest_send import DigestSend
 
 
 class DigestSubscription(Base, TimestampMixin):
@@ -21,4 +27,4 @@ class DigestSubscription(Base, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    sends: Mapped[list["DigestSend"]] = relationship(back_populates="subscription")
+    sends: Mapped[list[DigestSend]] = relationship(back_populates="subscription")

@@ -1,9 +1,15 @@
+from __future__ import annotations
+
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.models.job import Job
 
 
 class DedupKey(Base, TimestampMixin):
@@ -24,4 +30,4 @@ class DedupKey(Base, TimestampMixin):
         ForeignKey("sources.id"), index=True
     )
 
-    job: Mapped["Job"] = relationship(back_populates="dedup_key")
+    job: Mapped[Job] = relationship(back_populates="dedup_key")
