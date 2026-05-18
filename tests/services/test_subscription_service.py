@@ -1,15 +1,13 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 from app.models.digest_subscription import DigestSubscription
 from app.models.job import Job
 from app.schemas.subscription import DigestResult
 from app.services.subscription_service import SubscriptionService
 
-_NOW = datetime(2026, 1, 1, tzinfo=timezone.utc)
+_NOW = datetime(2026, 1, 1, tzinfo=UTC)
 _SUB_ID = uuid.uuid4()
 _JOB_ID = uuid.uuid4()
 

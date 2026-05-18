@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 from bs4 import BeautifulSoup, Tag
@@ -79,7 +79,7 @@ class WWRScraper(BaseScraper):
         if not link:
             raise AttributeError("no <a> tag in article")
 
-        href: str = link.get("href", "")  # type: ignore[assignment]
+        href: str = str(link.get("href", "")) if hasattr(link, "get") else ""
         source_url = f"{self.base_url}{href}" if href.startswith("/") else href
 
         company_tag = article.select_one(".company")
@@ -90,7 +90,7 @@ class WWRScraper(BaseScraper):
 
         company = company_tag.get_text(strip=True)
         title = title_tag.get_text(strip=True)
-        tags = [li.get_text(strip=True) for li in article.select("ul.tags li") if li.get_text(strip=True)]
+        tags = [t for li in article.select("ul.tags li") if (t := li.get_text(strip=True))]
 
         return RawJobItem(
             title=title,
@@ -100,7 +100,7 @@ class WWRScraper(BaseScraper):
             salary_min=None,
             salary_max=None,
             currency="USD",
-            posted_at=datetime.now(tz=timezone.utc),
+            posted_at=datetime.now(tz=UTC),
             source_url=source_url,
             source_name=self.source_name,
         )

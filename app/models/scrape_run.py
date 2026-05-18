@@ -1,14 +1,22 @@
+from __future__ import annotations
+
 import enum
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Enum as SAEnum, ForeignKey, Integer, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, Text
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
 
+if TYPE_CHECKING:
+    from app.models.job import Job
+    from app.models.source import Source
 
-class ScrapeRunStatus(str, enum.Enum):
+
+class ScrapeRunStatus(enum.StrEnum):
     RUNNING = "running"
     SUCCESS = "success"
     FAILED = "failed"
@@ -33,5 +41,5 @@ class ScrapeRun(Base, TimestampMixin):
     items_stored: Mapped[int] = mapped_column(Integer, default=0)
     error_message: Mapped[str | None] = mapped_column(Text)
 
-    source: Mapped["Source"] = relationship(back_populates="scrape_runs")
-    jobs: Mapped[list["Job"]] = relationship(back_populates="scrape_run")
+    source: Mapped[Source] = relationship(back_populates="scrape_runs")
+    jobs: Mapped[list[Job]] = relationship(back_populates="scrape_run")

@@ -1,5 +1,6 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import Any
 
 import httpx
 
@@ -55,7 +56,7 @@ class RemotiveScraper(BaseScraper):
         Skips malformed entries rather than failing the whole batch.
         """
         try:
-            data: dict = json.loads(raw)
+            data: dict[str, Any] = json.loads(raw)
         except json.JSONDecodeError as exc:
             raise ParseError(
                 f"Remotive JSON decode failed: {exc}", code="parse_error"
@@ -74,7 +75,7 @@ class RemotiveScraper(BaseScraper):
 
         return items
 
-    def _map_entry(self, entry: dict) -> RawJobItem:
+    def _map_entry(self, entry: dict[str, Any]) -> RawJobItem:
         posted_at = _parse_date(entry["publication_date"])
 
         return RawJobItem(
@@ -95,5 +96,5 @@ def _parse_date(date_str: str) -> datetime:
     """Parse ISO 8601 date string. Assumes UTC if no timezone present."""
     dt = datetime.fromisoformat(date_str)
     if dt.tzinfo is None:
-        return dt.replace(tzinfo=timezone.utc)
+        return dt.replace(tzinfo=UTC)
     return dt

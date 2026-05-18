@@ -1,11 +1,20 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import ARRAY, TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.models.dedup_key import DedupKey
+    from app.models.digest_send import DigestSend
+    from app.models.scrape_run import ScrapeRun
+    from app.models.source import Source
 
 
 class Job(Base, TimestampMixin):
@@ -34,9 +43,9 @@ class Job(Base, TimestampMixin):
     source_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sources.id"), index=True)
     scrape_run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("scrape_runs.id"))
 
-    source: Mapped["Source"] = relationship(back_populates="jobs")
-    scrape_run: Mapped["ScrapeRun"] = relationship(back_populates="jobs")
-    dedup_key: Mapped["DedupKey | None"] = relationship(
+    source: Mapped[Source] = relationship(back_populates="jobs")
+    scrape_run: Mapped[ScrapeRun] = relationship(back_populates="jobs")
+    dedup_key: Mapped[DedupKey | None] = relationship(
         back_populates="job", uselist=False
     )
-    digest_sends: Mapped[list["DigestSend"]] = relationship(back_populates="job")
+    digest_sends: Mapped[list[DigestSend]] = relationship(back_populates="job")

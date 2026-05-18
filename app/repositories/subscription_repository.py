@@ -1,5 +1,4 @@
-import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -51,7 +50,7 @@ class SubscriptionRepository:
             existing.tags_filter = tags_filter
             existing.min_salary = min_salary
             existing.is_active = True
-            existing.confirmed_at = datetime.now(tz=timezone.utc)
+            existing.confirmed_at = datetime.now(tz=UTC)
             await self._session.flush()
             return existing
 
@@ -60,7 +59,7 @@ class SubscriptionRepository:
             tags_filter=tags_filter,
             min_salary=min_salary,
             is_active=True,
-            confirmed_at=datetime.now(tz=timezone.utc),
+            confirmed_at=datetime.now(tz=UTC),
         )
         self._session.add(sub)
         await self._session.flush()

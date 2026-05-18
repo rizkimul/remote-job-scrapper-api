@@ -1,6 +1,6 @@
 import math
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
 
 import httpx
@@ -11,7 +11,7 @@ from app.main import create_app
 from app.routers.jobs import get_job_service
 from app.schemas.job import JobListResponse, JobResponse
 
-_NOW = datetime(2026, 1, 1, tzinfo=timezone.utc)
+_NOW = datetime(2026, 1, 1, tzinfo=UTC)
 _JOB_ID = uuid.uuid4()
 
 

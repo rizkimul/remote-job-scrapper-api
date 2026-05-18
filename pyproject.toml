@@ -48,12 +48,16 @@ plugins = ["sqlalchemy.ext.mypy.plugin"]
 exclude = ["alembic/"]
 
 [tool.ruff]
-line-length = 88
+line-length = 100
 target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# SQLAlchemy relationship string forward-refs are valid — ruff can't resolve cross-file names
+"app/models/*.py" = ["F821"]
 
 [dependency-groups]
 dev = [

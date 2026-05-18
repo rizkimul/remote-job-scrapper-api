@@ -4,8 +4,8 @@ import httpx
 import pytest
 
 from app.core.exceptions import BlockedError, RateLimitError, ScrapeError
-from app.scrapers.base import BaseScraper
 from app.schemas.scraper import RawJobItem
+from app.scrapers.base import BaseScraper
 
 
 class _TestScraper(BaseScraper):
@@ -65,9 +65,8 @@ async def test_fetch_with_retry_raises_after_max_attempts(scraper: _TestScraper)
     """Exhausting all retries raises the last ScrapeError."""
     scraper.fetch = AsyncMock(side_effect=RateLimitError("always 429"))  # type: ignore[method-assign]
 
-    with patch("app.scrapers.base.asyncio.sleep", new=AsyncMock()):
-        with pytest.raises(ScrapeError):
-            await scraper._fetch_with_retry(max_attempts=3)
+    with patch("app.scrapers.base.asyncio.sleep", new=AsyncMock()), pytest.raises(ScrapeError):
+        await scraper._fetch_with_retry(max_attempts=3)
 
     assert scraper.fetch.call_count == 3
 
@@ -81,9 +80,11 @@ async def test_fetch_with_retry_exponential_backoff_delays(scraper: _TestScraper
     async def capture_sleep(delay: float) -> None:
         sleep_calls.append(delay)
 
-    with patch("app.scrapers.base.asyncio.sleep", side_effect=capture_sleep):
-        with pytest.raises(ScrapeError):
-            await scraper._fetch_with_retry(max_attempts=3)
+    with (
+        patch("app.scrapers.base.asyncio.sleep", side_effect=capture_sleep),
+        pytest.raises(ScrapeError),
+    ):
+        await scraper._fetch_with_retry(max_attempts=3)
 
     assert len(sleep_calls) == 2  # 3 attempts → 2 sleeps between them
     # Second sleep must be longer than first (exponential)

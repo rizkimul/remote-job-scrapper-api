@@ -18,10 +18,10 @@ def get_job_service(session: Annotated[AsyncSession, Depends(get_db)]) -> JobSer
 @router.get("", response_model=JobListResponse)
 async def list_jobs(
     service: Annotated[JobService, Depends(get_job_service)],
-    tags: Annotated[list[str] | None, Query(description="Filter jobs that have ANY of these tags")] = None,
-    salary_min: Annotated[int | None, Query(ge=0, description="Minimum salary (job.salary_min >= value)")] = None,
-    search: Annotated[str | None, Query(min_length=2, max_length=200, description="Full-text search")] = None,
-    source: Annotated[str | None, Query(description="Filter by source name, e.g. 'remoteok'")] = None,
+    tags: Annotated[list[str] | None, Query(description="ANY-match tag filter")] = None,
+    salary_min: Annotated[int | None, Query(ge=0, description="Minimum salary")] = None,
+    search: Annotated[str | None, Query(min_length=2, max_length=200, description="Search")] = None,
+    source: Annotated[str | None, Query(description="Source name filter, e.g. 'remoteok'")] = None,
     page: Annotated[int, Query(ge=1, description="Page number (1-based)")] = 1,
     page_size: Annotated[int, Query(ge=1, le=100, description="Items per page")] = 20,
 ) -> JobListResponse:

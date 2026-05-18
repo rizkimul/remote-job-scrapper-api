@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.pipelines.normalize import (
     _compute_dedup_hash,
@@ -8,7 +8,7 @@ from app.pipelines.normalize import (
 )
 from app.schemas.scraper import RawJobItem
 
-_NOW = datetime(2026, 1, 1, tzinfo=timezone.utc)
+_NOW = datetime(2026, 1, 1, tzinfo=UTC)
 
 
 def _make_raw(**overrides) -> RawJobItem:

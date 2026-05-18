@@ -1,16 +1,16 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
-
-import pytest
 
 from app.pipelines.deduplicate import deduplicate_items
 from app.repositories.dedup_key_repository import DedupKeyRepository
 from app.schemas.normalized_job import NormalizedJob
 
-_NOW = datetime(2026, 1, 1, tzinfo=timezone.utc)
+_NOW = datetime(2026, 1, 1, tzinfo=UTC)
 
 
-def _make_normalized(dedup_hash: str, source_url: str = "https://example.com/job/1") -> NormalizedJob:
+def _make_normalized(
+    dedup_hash: str, source_url: str = "https://example.com/job/1"
+) -> NormalizedJob:
     return NormalizedJob(
         title="Dev",
         company="Acme",
