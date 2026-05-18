@@ -3,7 +3,6 @@
 [![CI](https://github.com/rizkimul/remote-job-scrapper-api/actions/workflows/ci.yml/badge.svg)](https://github.com/rizkimul/remote-job-scrapper-api/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Coverage](https://img.shields.io/badge/coverage-83%25-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-green)
 
 A production-grade REST API that aggregates remote developer job listings from multiple public job boards into a unified, deduplicated, queryable feed — with daily email digests and admin analytics.
 
@@ -68,21 +67,21 @@ graph TB
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| API | FastAPI (async) |
-| ORM | SQLAlchemy 2.0 (async) + asyncpg |
-| Database | PostgreSQL 16 — ARRAY tags, full-text search |
-| Cache / Queue | Redis 7 |
-| Task Scheduler | Celery + Celery Beat |
-| Scraping | httpx + BeautifulSoup4 + selectolax |
-| Config | Pydantic Settings |
-| Logging | structlog (JSON in prod) |
-| Migrations | Alembic (async) |
-| Testing | pytest-asyncio + respx + pytest-cov |
-| Lint / Types | ruff + mypy (strict) |
-| CI | GitHub Actions |
-| Containerisation | Docker + docker-compose |
+| Layer            | Technology                                   |
+| ---------------- | -------------------------------------------- |
+| API              | FastAPI (async)                              |
+| ORM              | SQLAlchemy 2.0 (async) + asyncpg             |
+| Database         | PostgreSQL 16 — ARRAY tags, full-text search |
+| Cache / Queue    | Redis 7                                      |
+| Task Scheduler   | Celery + Celery Beat                         |
+| Scraping         | httpx + BeautifulSoup4 + selectolax          |
+| Config           | Pydantic Settings                            |
+| Logging          | structlog (JSON in prod)                     |
+| Migrations       | Alembic (async)                              |
+| Testing          | pytest-asyncio + respx + pytest-cov          |
+| Lint / Types     | ruff + mypy (strict)                         |
+| CI               | GitHub Actions                               |
+| Containerisation | Docker + docker-compose                      |
 
 ---
 
@@ -103,41 +102,41 @@ graph TB
 
 ### Jobs
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/jobs` | List jobs with filters and pagination |
+| Method | Path    | Description                           |
+| ------ | ------- | ------------------------------------- |
+| `GET`  | `/jobs` | List jobs with filters and pagination |
 
 **Query parameters:**
 
-| Param | Type | Description |
-|-------|------|-------------|
-| `tags` | `list[str]` | ANY-match tag filter (`?tags=python&tags=fastapi`) |
-| `salary_min` | `int` | Jobs with `salary_min ≥ value` |
-| `search` | `str` | Full-text search (title, company, description) |
-| `source` | `str` | Filter by source (`remoteok`, `wwr`, `remotive`) |
-| `page` | `int` | Page number (default: 1) |
-| `page_size` | `int` | Items per page, max 100 (default: 20) |
+| Param        | Type        | Description                                        |
+| ------------ | ----------- | -------------------------------------------------- |
+| `tags`       | `list[str]` | ANY-match tag filter (`?tags=python&tags=fastapi`) |
+| `salary_min` | `int`       | Jobs with `salary_min ≥ value`                     |
+| `search`     | `str`       | Full-text search (title, company, description)     |
+| `source`     | `str`       | Filter by source (`remoteok`, `wwr`, `remotive`)   |
+| `page`       | `int`       | Page number (default: 1)                           |
+| `page_size`  | `int`       | Items per page, max 100 (default: 20)              |
 
 ### Subscriptions
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/subscriptions` | Subscribe email to daily digest |
-| `DELETE` | `/subscriptions/{email}` | Unsubscribe |
+| Method   | Path                     | Description                     |
+| -------- | ------------------------ | ------------------------------- |
+| `POST`   | `/subscriptions`         | Subscribe email to daily digest |
+| `DELETE` | `/subscriptions/{email}` | Unsubscribe                     |
 
 ### Admin
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/admin/stats/scrape-runs` | Success rate per source |
-| `GET` | `/admin/stats/jobs` | Items stored per source per day (`?days=7`) |
+| Method | Path                       | Description                                 |
+| ------ | -------------------------- | ------------------------------------------- |
+| `GET`  | `/admin/stats/scrape-runs` | Success rate per source                     |
+| `GET`  | `/admin/stats/jobs`        | Items stored per source per day (`?days=7`) |
 
 ### Infrastructure
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/health` | Health check |
-| `GET` | `/docs` | Swagger UI (dev mode only) |
+| Method | Path      | Description                |
+| ------ | --------- | -------------------------- |
+| `GET`  | `/health` | Health check               |
+| `GET`  | `/docs`   | Swagger UI (dev mode only) |
 
 ---
 
@@ -263,6 +262,7 @@ alembic/            # Database migrations
 ```
 
 **Strict layering rules:**
+
 - Routers → Services → Repositories → DB (no layer skipping)
 - Scrapers return raw data — they never write to DB
 - All I/O is async — no sync DB calls anywhere
@@ -271,14 +271,14 @@ alembic/            # Database migrations
 
 ## Architectural Patterns
 
-| Pattern | Where Used |
-|---------|-----------|
-| Strategy | `BaseScraper` subclasses — swap source without changing pipeline |
-| Repository | All DB access isolated in `repositories/` |
-| CQRS-lite | Read services (stats, jobs) separate from write services (pipeline) |
-| Template Method | `BaseScraper.scrape()` — fixed flow, overridable steps |
-| Bloom Filter (key store) | SHA-256 `DedupKey` table for cross-source dedup |
-| Dependency Injection | FastAPI `Depends()` — testable without real DB |
+| Pattern                  | Where Used                                                          |
+| ------------------------ | ------------------------------------------------------------------- |
+| Strategy                 | `BaseScraper` subclasses — swap source without changing pipeline    |
+| Repository               | All DB access isolated in `repositories/`                           |
+| CQRS-lite                | Read services (stats, jobs) separate from write services (pipeline) |
+| Template Method          | `BaseScraper.scrape()` — fixed flow, overridable steps              |
+| Bloom Filter (key store) | SHA-256 `DedupKey` table for cross-source dedup                     |
+| Dependency Injection     | FastAPI `Depends()` — testable without real DB                      |
 
 ---
 
@@ -295,23 +295,19 @@ All sources are scraped in compliance with their `robots.txt` and public API ter
 
 ## Build Log
 
-| # | Feature | Status |
-|---|---------|--------|
-| 1 | Project scaffold + Docker Compose | ✅ |
-| 2 | DB models + Alembic async migrations | ✅ |
-| 3 | BaseScraper + RemoteOK scraper | ✅ |
-| 4 | ETL pipeline: normalize → dedup → store | ✅ |
-| 5 | Celery scrape_source task + beat schedule | ✅ |
-| 6 | `GET /jobs` with filters, pagination, full-text search | ✅ |
-| 7 | WWR + Remotive scrapers (proves abstraction) | ✅ |
-| 8 | Digest subscriptions + `send_digest` Celery task | ✅ |
-| 9 | Admin stats endpoints | ✅ |
-| 10 | 115 tests, 83% coverage, mypy strict | ✅ |
-| 11 | GitHub Actions CI pipeline | ✅ |
-| 12 | Portfolio README + Mermaid architecture diagram | ✅ |
+| #   | Feature                                                | Status |
+| --- | ------------------------------------------------------ | ------ |
+| 1   | Project scaffold + Docker Compose                      | ✅     |
+| 2   | DB models + Alembic async migrations                   | ✅     |
+| 3   | BaseScraper + RemoteOK scraper                         | ✅     |
+| 4   | ETL pipeline: normalize → dedup → store                | ✅     |
+| 5   | Celery scrape_source task + beat schedule              | ✅     |
+| 6   | `GET /jobs` with filters, pagination, full-text search | ✅     |
+| 7   | WWR + Remotive scrapers (proves abstraction)           | ✅     |
+| 8   | Digest subscriptions + `send_digest` Celery task       | ✅     |
+| 9   | Admin stats endpoints                                  | ✅     |
+| 10  | 115 tests, 83% coverage, mypy strict                   | ✅     |
+| 11  | GitHub Actions CI pipeline                             | ✅     |
+| 12  | Portfolio README + Mermaid architecture diagram        | ✅     |
 
 ---
-
-## License
-
-MIT
