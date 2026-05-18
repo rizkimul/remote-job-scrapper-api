@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from sqlalchemy import func, literal_column, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -57,6 +58,7 @@ class JobRepository:
         salary_min: int | None = None,
         search: str | None = None,
         source: str | None = None,
+        since: datetime | None = None,
         page: int = 1,
         page_size: int = 20,
     ) -> tuple[list[Job], int]:
@@ -67,6 +69,7 @@ class JobRepository:
             salary_min: Return jobs with salary_min >= this value.
             search: Full-text search across title, company, description.
             source: Filter by source name (e.g. 'remoteok').
+            since: Return only jobs created at or after this timestamp (used by digest).
             page: 1-based page number.
             page_size: Items per page.
 
@@ -79,6 +82,8 @@ class JobRepository:
             conditions.append(Job.tags.overlap(tags))
         if salary_min is not None:
             conditions.append(Job.salary_min >= salary_min)
+        if since is not None:
+            conditions.append(Job.created_at >= since)
         if search:
             # Inline tsvector — works without a pre-computed column.
             # search_vector column gets pre-computed in a later migration for perf.
