@@ -1,10 +1,17 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.models.digest_subscription import DigestSubscription
+    from app.models.job import Job
 
 
 class DigestSend(Base, TimestampMixin):
@@ -27,5 +34,5 @@ class DigestSend(Base, TimestampMixin):
     job_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("jobs.id"), index=True)
     sent_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
-    subscription: Mapped["DigestSubscription"] = relationship(back_populates="sends")
-    job: Mapped["Job"] = relationship(back_populates="digest_sends")
+    subscription: Mapped[DigestSubscription] = relationship(back_populates="sends")
+    job: Mapped[Job] = relationship(back_populates="digest_sends")

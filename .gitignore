@@ -16,3 +16,4 @@ htmlcov/
 *.log
 docs/
 .DS_Store
+CLAUDE.md
