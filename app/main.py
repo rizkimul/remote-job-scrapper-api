@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from app.core.config import settings
 from app.core.logging import configure_logging
-from app.routers import jobs
+from app.routers import jobs, subscriptions
 
 
 def create_app() -> FastAPI:
@@ -26,6 +26,7 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     app.include_router(jobs.router)
+    app.include_router(subscriptions.router)
 
     return app
 
