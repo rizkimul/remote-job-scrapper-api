@@ -4,6 +4,7 @@ import structlog
 
 from app.core.db import AsyncSessionLocal
 from app.services.pipeline_service import PipelineService
+from app.services.subscription_service import SubscriptionService
 from app.workers.celery_app import celery_app
 
 log = structlog.get_logger()
@@ -12,6 +13,14 @@ log = structlog.get_logger()
 # ---------------------------------------------------------------------------
 # Internal async helpers — extracted so tests can call them without a Celery worker
 # ---------------------------------------------------------------------------
+
+
+async def _run_send_digest() -> dict:
+    """Run digest for all active subscribers. Returns serialisable result dict."""
+    async with AsyncSessionLocal() as session:
+        service = SubscriptionService(session=session)
+        result = await service.send_all_digests()
+        return result.model_dump()
 
 
 async def _run_scrape_source(source_name: str) -> dict:
@@ -55,15 +64,22 @@ def scrape_source(self, source_name: str) -> dict:
         raise self.retry(exc=exc, countdown=countdown)
 
 
-@celery_app.task(name="send_digest")
-def send_digest() -> dict:
-    """Send daily digest emails to subscribers. Implemented in Step 8.
+@celery_app.task(bind=True, name="send_digest", max_retries=2)
+def send_digest(self) -> dict:
+    """Send daily digest emails to all active subscribers.
 
     Returns:
-        Stub result.
+        Serialised DigestResult dict.
     """
-    log.info("send_digest_stub")
-    return {"status": "not_implemented"}
+    log.info("send_digest_start")
+    try:
+        result = asyncio.run(_run_send_digest())
+        log.info("send_digest_complete", **result)
+        return result
+    except Exception as exc:
+        countdown = 300 * (2 ** self.request.retries)  # 5m, 10m
+        log.error("send_digest_retry", error=str(exc), retry_in_s=countdown)
+        raise self.retry(exc=exc, countdown=countdown)
 
 
 @celery_app.task(name="cleanup_stale")
