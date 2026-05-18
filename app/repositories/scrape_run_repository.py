@@ -1,9 +1,11 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.scrape_run import ScrapeRun, ScrapeRunStatus
+from app.models.source import Source
 
 
 class ScrapeRunRepository:
@@ -56,3 +58,62 @@ class ScrapeRunRepository:
         run.items_stored = items_stored
         run.error_message = error_message
         await self._session.flush()
+
+    async def get_success_rate_by_source(
+        self,
+    ) -> list[tuple[str, int, int, int]]:
+        """Return (source_name, total_runs, success_count, failed_count) per source.
+
+        Excludes RUNNING rows — they have no final status yet.
+
+        Returns:
+            List of tuples ordered by source name.
+        """
+        stmt = (
+            select(
+                Source.name,
+                func.count().label("total_runs"),
+                func.sum(
+                    case((ScrapeRun.status == ScrapeRunStatus.SUCCESS, 1), else_=0)
+                ).label("success_count"),
+                func.sum(
+                    case((ScrapeRun.status == ScrapeRunStatus.FAILED, 1), else_=0)
+                ).label("failed_count"),
+            )
+            .join(Source, ScrapeRun.source_id == Source.id)
+            .where(ScrapeRun.status != ScrapeRunStatus.RUNNING)
+            .group_by(Source.name)
+            .order_by(Source.name)
+        )
+        rows = (await self._session.execute(stmt)).all()
+        return [(r.name, r.total_runs, r.success_count, r.failed_count) for r in rows]
+
+    async def get_items_per_source_per_day(
+        self,
+        days: int = 7,
+    ) -> list[tuple[str, date, int]]:
+        """Return (source_name, date, items_stored) for the last N days.
+
+        Args:
+            days: Number of past days to include (default 7).
+
+        Returns:
+            List of tuples ordered by date desc, source name.
+        """
+        since = datetime.now(tz=timezone.utc) - timedelta(days=days)
+        stmt = (
+            select(
+                Source.name,
+                func.date_trunc("day", ScrapeRun.ended_at).label("day"),
+                func.sum(ScrapeRun.items_stored).label("items_stored"),
+            )
+            .join(Source, ScrapeRun.source_id == Source.id)
+            .where(
+                ScrapeRun.status == ScrapeRunStatus.SUCCESS,
+                ScrapeRun.ended_at >= since,
+            )
+            .group_by(Source.name, func.date_trunc("day", ScrapeRun.ended_at))
+            .order_by(func.date_trunc("day", ScrapeRun.ended_at).desc(), Source.name)
+        )
+        rows = (await self._session.execute(stmt)).all()
+        return [(r.name, r.day.date(), int(r.items_stored)) for r in rows]
